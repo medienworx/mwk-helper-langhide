@@ -77,7 +77,7 @@ class Frontend extends \Contao\Frontend
                 /**
                  * mwk-helper-langhide start
                  */
-                if( $objRootPage->language != \Config::get('langHideInUrl')) {
+                if ($objRootPage->language != \Config::get('langHideInUrl')) {
                     static::redirect((!\Config::get('rewriteURL') ? 'index.php/' : '') . $objRootPage->language . '/', 301);
                 }
                 /**

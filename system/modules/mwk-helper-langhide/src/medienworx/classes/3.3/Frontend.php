@@ -45,11 +45,26 @@ class Frontend extends \Contao\Frontend
 
         $host = \Environment::get('host');
 
-        if (empty($_GET['language'])) {
-            if (\Config::get('langHideInUrl') != '') {
-                $_GET['language'] = \Config::get('langHideInUrl');
+        /**
+         * mwk-helper-langhide start
+         */
+        if (\Input::get('language') == NULL) {
+            // no language is set check the browser language
+            $browserLanguages = \Environment::get('httpAcceptLanguage');
+
+            // check if the browser language can be found in the tree
+            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguages);
+
+            $hideLanguage = \Config::get('langHideInUrl');
+
+            // check if the browser language and the hide language is the same and browser language exists
+            if (substr($browserLanguages[0], 0, 2) == trim($hideLanguage) || $objPage == NULL) {
+                $_GET['language'] = $hideLanguage;
             }
         }
+        /**
+         * mwk-helper-langhide end
+         */
 
         // The language is set in the URL
         if (\Config::get('addLanguageToUrl') && !empty($_GET['language']))
@@ -171,23 +186,7 @@ class Frontend extends \Contao\Frontend
             }
             else
             {
-                /**
-                 * mwk-helper-langhide start
-                 */
-                // set language from config is set
-                if( \Config::get('langHideInUrl') != '') {
-                    \Input::setGet('language', \Config::get('langHideInUrl'));
-
-                    list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
-                    $arrMatches = array();
-                    $strRequest = str_replace(\Config::get('urlSuffix'), '', $strRequest);
-
-                } else {
-                /**
-                 * mwk-helper-langhide end
-                 */
-                    return false; // Language not provided
-                }
+                return false;
             }
         }
 

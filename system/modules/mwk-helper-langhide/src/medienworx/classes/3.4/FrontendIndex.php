@@ -32,13 +32,24 @@ class FrontendIndex extends \Contao\FrontendIndex
          * mwk-helper-langhide start
          */
         if (\Input::get('language') == NULL) {
-            $_GET['language'] = \Config::get('langHideInUrl');
-            list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
-            $arrMatches = array();
+            // no language is set check the browser language
+            $browserLanguages = \Environment::get('httpAcceptLanguage');
 
-            $strRequest = str_replace(\Config::get('urlSuffix'), '', $strRequest);
-            $objPageL = \PageModel::findByAliases(array($strRequest));
-            $pageId = $objPageL->id;
+            // check if the browser language can be found in the tree
+            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguages);
+
+            $hideLanguage = \Config::get('langHideInUrl');
+
+            // check if the browser language and the hide language is the same and browser language exists
+            if (substr($browserLanguages[0], 0, 2) == trim($hideLanguage) || $objPage == NULL) {
+                $_GET['language'] = $hideLanguage;
+                list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
+                $arrMatches = array();
+
+                $strRequest = str_replace(\Config::get('urlSuffix'), '', $strRequest);
+                $objPageL = \PageModel::findByAliases(array($strRequest));
+                $pageId = $objPageL->id;
+            }
         }
         /**
          * mwk-helper-langhide end
