@@ -31,18 +31,23 @@ class FrontendIndex extends \Contao\FrontendIndex
         /**
          * mwk-helper-langhide start
          */
-        if (\Input::get('language') == NULL) {
+        // get the fallback language
+        if (empty($_GET['language']) && \Config::get('addLanguageToUrl') && \Config::get('langHideInUrl')) {
             // no language is set check the browser language
+            // get the fallback language
+            $objPageFallback = \PageModel::findBy(array('fallback = 1'), array());
+            $fallbackLanguage = strtolower(substr($objPageFallback->language, 0, 2));
+
+            // get the browser language
             $browserLanguages = \Environment::get('httpAcceptLanguage');
+            $browserLanguage = strtolower(substr($browserLanguages[0], 0, 2));
 
-            // check if the browser language can be found in the tree
-            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguages);
-
-            $hideLanguage = \Config::get('langHideInUrl');
+            // check if the browser language has an root page
+            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguage);
 
             // check if the browser language and the hide language is the same and browser language exists
-            if (substr($browserLanguages[0], 0, 2) == trim($hideLanguage) || $objPage == NULL) {
-                $_GET['language'] = $hideLanguage;
+            if ($browserLanguage == $fallbackLanguage || empty($_GET['language']) || $objPage == NULL) {
+                $_GET['language'] = $fallbackLanguage;
                 list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
                 $arrMatches = array();
 

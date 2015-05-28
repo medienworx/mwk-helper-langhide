@@ -48,18 +48,21 @@ class Frontend extends \Contao\Frontend
         /**
          * mwk-helper-langhide start
          */
-        if (\Input::get('language') == NULL) {
-            // no language is set check the browser language
+        if (empty($_GET['language']) && \Config::get('addLanguageToUrl') && \Config::get('langHideInUrl')) {
+            // get the fallback language
+            $objPageFallback = \PageModel::findBy(array('fallback = 1'), array());
+            $fallbackLanguage = strtolower(substr($objPageFallback->language, 0, 2));
+
+            // get the browser language
             $browserLanguages = \Environment::get('httpAcceptLanguage');
+            $browserLanguage = strtolower(substr($browserLanguages[0], 0, 2));
 
-            // check if the browser language can be found in the tree
-            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguages);
+            // check if the browser language has an root page
+            $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguage);
 
-            $hideLanguage = \Config::get('langHideInUrl');
-
-            // check if the browser language and the hide language is the same and browser language exists
-            if (substr($browserLanguages[0], 0, 2) == trim($hideLanguage) || $objPage == NULL) {
-                $_GET['language'] = $hideLanguage;
+            // browser language is fallback language OR no page s found for the browser language
+            if ($browserLanguage == $fallbackLanguage || empty($_GET['language']) || $objPage == NULL) {
+                $_GET['language'] = $fallbackLanguage;
             }
         }
         /**
@@ -102,7 +105,7 @@ class Frontend extends \Contao\Frontend
                 /**
                  * mwk-helper-langhide start
                  */
-                if($objRootPage->language != \Config::get('langHideInUrl')) {
+                if($objRootPage->language != $fallbackLanguage) {
                     static::redirect((!\Config::get('rewriteURL') ? 'index.php/' : '') . $objRootPage->language . '/', 301);
                 }
                 /**
@@ -186,7 +189,29 @@ class Frontend extends \Contao\Frontend
             }
             else
             {
-                return false;
+                /**
+                 * mwk-helper-langhide start
+                 */
+                // get the fallback language
+                $objPageFallback = \PageModel::findBy(array('fallback = 1'), array());
+                $fallbackLanguage = strtolower(substr($objPageFallback->language, 0, 2));
+
+                // get the browser language
+                $browserLanguages = \Environment::get('httpAcceptLanguage');
+                $browserLanguage = strtolower(substr($browserLanguages[0], 0, 2));
+
+                // check if the browser language has an root page
+                $objPage = \PageModel::findBy(array('language = ?', 'type = "root"'), $browserLanguage);
+
+                // browser language is fallback language OR no page s found for the browser language
+                if ($browserLanguage == $fallbackLanguage || empty($_GET['language']) || $objPage == NULL) {
+                    \Input::setGet('language', $fallbackLanguage);
+                } else {
+                    return false;
+                }
+                /**
+                 * mwk-helper-langhide end
+                 */
             }
         }
 

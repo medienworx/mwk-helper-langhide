@@ -32,8 +32,10 @@ class MwkHelperLanguageClass extends \Frontend
      */
     public function replaceLanguageInUrl($arrRow, $strParams, $strUrl)
     {
-        if (\Config::get('langHideInUrl') != '') {
-            if (substr($strUrl, 0, 2) == \Config::get('langHideInUrl')) {
+        if (\Config::get('addLanguageToUrl') && \Config::get('langHideInUrl')) {
+            $objPageFallback = \PageModel::findBy(array('fallback = 1'), array());
+            $fallbackLanguage = strtolower(substr($objPageFallback->language, 0, 2));
+            if (substr($strUrl, 0, 2) == $fallbackLanguage) {
                 return substr($strUrl, 3);
             } else {
                 return $strUrl;

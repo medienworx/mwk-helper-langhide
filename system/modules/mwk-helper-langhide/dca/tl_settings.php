@@ -19,7 +19,6 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['langHideInUrl'] =
     array
     (
         'label'                   => &$GLOBALS['TL_LANG']['tl_settings']['langHideInUrl'],
-        'inputType'               => 'text',
-        'eval'                    => array('nospace'=>true, 'tl_class'=>'w50'),
-        'sql'                     => "varchar(5) NULL"
+        'inputType'               => 'checkbox',
+        'eval'                    => array('tl_class'=>'w50', 'submitOnChange'=>true)
     );
